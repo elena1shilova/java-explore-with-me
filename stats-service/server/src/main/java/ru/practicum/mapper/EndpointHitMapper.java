@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.model.EndpointHit;
-import ru.practicum.model.ViewStats;
 
 @RequiredArgsConstructor
 @Component
