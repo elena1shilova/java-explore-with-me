@@ -24,30 +24,6 @@ public class EndpointHitMapper {
         }
     }
 
-    public ViewStats toViewStats(ViewStatsDto viewStatsDto) {
-        if (viewStatsDto != null) {
-            return new ViewStats(
-                    viewStatsDto.getApp(),
-                    viewStatsDto.getUri(),
-                    1L
-            );
-        } else {
-            return null;
-        }
-    }
-
-    public ViewStatsDto toViewStatsDto(ViewStats viewStats) {
-        if (viewStats != null) {
-            return new ViewStatsDto(
-                    viewStats.getApp(),
-                    viewStats.getUri(),
-                    1L
-            );
-        } else {
-            return null;
-        }
-    }
-
     public ViewStatsDto toViewStatsDto(EndpointHit endpointHit) {
         return new ViewStatsDto(
                 endpointHit.getApp(),
