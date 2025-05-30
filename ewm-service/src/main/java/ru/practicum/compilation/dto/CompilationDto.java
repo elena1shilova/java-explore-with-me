@@ -1,6 +1,5 @@
-package ru.practicum.user.dto;
+package ru.practicum.compilation.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,23 +7,27 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.event.dto.EventShortDto;
 
-@Data
+import java.util.List;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+@Data
+public class CompilationDto {
 
+    @NotNull
     private Long id;
 
-    @Size(min = 2, max = 250)
-    @NotNull
-    @NotBlank
-    private String name;
+    private List<EventShortDto> events;
 
-    @Size(min = 6, max = 254)
-    @Email
+    @NotNull
+    private Boolean pinned;
+
     @NotBlank
     @NotNull
-    private String email;
+    @Size(min = 1, max = 50)
+    private String title;
+
 }

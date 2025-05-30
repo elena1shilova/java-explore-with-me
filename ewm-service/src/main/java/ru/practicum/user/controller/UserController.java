@@ -1,8 +1,10 @@
 package ru.practicum.user.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,18 +21,19 @@ import ru.practicum.user.service.UserService;
 
 import java.util.List;
 
+@Validated
 @Slf4j
 @RestController
 @RequestMapping(path = "/admin/users")
 @RequiredArgsConstructor
-public class UserAdminController {
+public class UserController {
 
     private final UserService userService;
 
     @ResponseBody
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto addUserAdmin(@RequestBody NewUserRequest newUserRequest) {
+    public UserDto addUserAdmin(@Valid @RequestBody NewUserRequest newUserRequest) {
         log.info("Получен запрос на добавление нового пользователя");
         return userService.addUserAdmin(newUserRequest);
     }
@@ -50,4 +53,3 @@ public class UserAdminController {
         userService.deleteUserAdmin(userId);
     }
 }
-

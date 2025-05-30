@@ -11,6 +11,7 @@ import ru.practicum.dto.EndpointHitDto;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -30,9 +31,14 @@ public class StatsClient extends BaseClient {
 
     public ResponseEntity<Object> getStats(LocalDateTime start,
                                            LocalDateTime end,
-                                           String uris,
+                                           List<String> uris,
                                            Boolean unique
     ) {
+        StringBuilder url = new StringBuilder();
+        for (String uri : uris) {
+            url.append("&uris=").append(uri);
+        }
+
         Map<String, Object> params = new HashMap<>();
 
         params.put("start", start);
@@ -40,7 +46,7 @@ public class StatsClient extends BaseClient {
         params.put("uris", uris);
         params.put("unique", unique);
 
-        return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", params);
+        return get("/stats?start={start}&end={end}" + url + "&unique={unique}", params);
     }
 
     public ResponseEntity<Object> hit(EndpointHitDto endpointHitDto) {
