@@ -29,7 +29,7 @@ public class EventFullDto {
 
     private CategoryDto category;
 
-    private boolean paid;
+    private Boolean paid;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
@@ -43,7 +43,7 @@ public class EventFullDto {
     @Size(min = 20, max = 7000)
     private String description;
 
-    private Integer participantLimit;
+    private Long participantLimit;
 
     private EventState state;
 
@@ -55,6 +55,6 @@ public class EventFullDto {
 
     private Location location;
 
-    private boolean requestModeration;
+    private Boolean requestModeration;
 
 }

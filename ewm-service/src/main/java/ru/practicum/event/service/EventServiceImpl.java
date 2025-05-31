@@ -15,6 +15,8 @@ import ru.practicum.StatsClient;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.compilation.repository.CompilationRepository;
+import ru.practicum.compilation.service.CompilationService;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.event.dto.EventAdminParam;
 import ru.practicum.event.dto.EventFullDto;
@@ -30,8 +32,8 @@ import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.IllegalArgumentException;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.UpdateEventIncorrectDataException;
 import ru.practicum.exception.ValidationException;
-import ru.practicum.exception.handler.IncorrectDataException;
 import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.request.dto.ParticipationRequestDto;
@@ -61,6 +63,8 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+    private final CompilationRepository compilationRepository;
+    private final CompilationService compilationService;
     private final UserServiceImpl userServiceImpl;
     private final StatsClient statsClient;
     private final CategoryMapper categoryMapper;
@@ -72,7 +76,7 @@ public class EventServiceImpl implements EventService {
         if (newEventDto.getEventDate() != null
                 && newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))
         ) {
-            throw new IncorrectDataException("Событие не удовлетворяет правилам создания");
+            throw new ValidationException("Событие не удовлетворяет правилам создания");
         }
 
         User user = userRepository.findById(userId)
@@ -81,8 +85,6 @@ public class EventServiceImpl implements EventService {
         Category category = categoryRepository.findById(newEventDto.getCategory()).orElseThrow();
 
         Event event = eventMapper.toEvent(newEventDto, category, user);
-
-        event.setRequestModeration(true);
 
         Event newEvent = eventRepository.save(event);
 
@@ -106,9 +108,8 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventFullDto getEventByIdPrivate(Long userId, Long eventId) {
-
         log.info("Получен запрос на получение полной информации о событии пользователя");
-        Event event = eventRepository.findByInitiatorIdAndId(eventId, userId);
+        Event event = eventRepository.findByInitiatorIdAndId(userId, eventId);
 
         Long view = getHitsEvent(
                 event.getId(),
@@ -121,13 +122,18 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
+    public EventFullDto updateEventPrivate(Long userId,
+                                           Long eventId,
+                                           UpdateEventUserRequest updateEventUserRequest
+    ) {
+        log.info("Изменение события пользователем");
+        Event event = eventRepository.findByInitiatorIdAndId(userId, eventId);
 
-        Event event = eventRepository.findById(eventId).orElseThrow(
-                () -> new NotFoundException("Событие не найдено или недоступно")
-        );
+        if (event.getState() == EventState.PUBLISHED) {
+            throw new IllegalArgumentException("Пользователь не может изменять опубликованное событие");
+        }
 
-        User user = userRepository.findById(userId).orElseThrow(
+        userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("Пользователь не найден")
         );
 
@@ -150,7 +156,7 @@ public class EventServiceImpl implements EventService {
 
         if (updateEventUserRequest.getEventDate() != null) {
             if (updateEventUserRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new IncorrectDataException("Начало события должно быть не менее 2 часов от его создания");
+                throw new ValidationException("Начало события должно быть не менее 2 часов от его создания");
             } else {
                 event.setEventDate(updateEventUserRequest.getEventDate());
             }
@@ -183,7 +189,9 @@ public class EventServiceImpl implements EventService {
             } else if (updateEventUserRequest.getStateAction().equals("CANCEL_REVIEW")) {
                 event.setState(EventState.CANCELED);
             } else {
-                throw new IllegalArgumentException("Событие должно иметь статус PENDING при создании и статус CANCELED после выполнения запроса");
+                throw new IllegalArgumentException(
+                        "Событие должно иметь статус PENDING при создании и статус CANCELED после выполнения запроса"
+                );
             }
         }
 
@@ -192,7 +200,11 @@ public class EventServiceImpl implements EventService {
         }
 
         log.info("Событие изменено");
-        return eventMapper.toFull(eventRepository.save(event), 0L);
+        return eventMapper.toFull(eventRepository.save(event), getHitsEvent(eventId,
+                LocalDateTime.now().minusDays(100),
+                LocalDateTime.now(),
+                false,
+                statsClient));
 
     }
 
@@ -203,8 +215,10 @@ public class EventServiceImpl implements EventService {
             List<Predicate> predicates = new ArrayList<>();
 
             if (eventAdminParam.getUsers() != null) {
-                CriteriaBuilder.In<Long> usersInClause = criteriaBuilder.in(root.get("initiator"));
-                for (Long user : eventAdminParam.getUsers()) {
+                CriteriaBuilder.In<User> usersInClause = criteriaBuilder.in(root.get("initiator"));
+                for (Long userId : eventAdminParam.getUsers()) {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
                     usersInClause.value(user);
                 }
                 predicates.add(usersInClause);
@@ -229,8 +243,10 @@ public class EventServiceImpl implements EventService {
             }
 
             if (eventAdminParam.getCategories() != null) {
-                CriteriaBuilder.In<Long> categoriesInClause = criteriaBuilder.in(root.get("category"));
-                for (Long category : eventAdminParam.getCategories()) {
+                CriteriaBuilder.In<Category> categoriesInClause = criteriaBuilder.in(root.get("category"));
+                for (Long categoryId : eventAdminParam.getCategories()) {
+                    Category category = categoryRepository
+                            .findById(categoryId).orElseThrow(() -> new NotFoundException("Категория не найдена"));
                     categoriesInClause.value(category);
                 }
                 predicates.add(categoriesInClause);
@@ -285,8 +301,11 @@ public class EventServiceImpl implements EventService {
             event.setAnnotation(updateEventAdminRequest.getAnnotation());
         }
 
-        if (updateEventAdminRequest.getCategory() != null && updateEventAdminRequest.getCategory().getId() != 0) {
-            Category category = categoryRepository.getById(updateEventAdminRequest.getCategory().getId());
+        if (updateEventAdminRequest.getCategory() != null
+                && categoryRepository.existsById(updateEventAdminRequest.getCategory())) {
+            Category category = categoryRepository
+                    .findById(updateEventAdminRequest.getCategory())
+                    .orElseThrow(() -> new NotFoundException("Категория не найдена"));
             event.setCategory(category);
         }
 
@@ -296,7 +315,9 @@ public class EventServiceImpl implements EventService {
 
         if (updateEventAdminRequest.getEventDate() != null) {
             if (updateEventAdminRequest.getEventDate().isBefore(LocalDateTime.now().minusHours(1))) {
-                throw new IncorrectDataException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
+                throw new UpdateEventIncorrectDataException(
+                        "Дата начала изменяемого события должна быть не ранее чем за час от даты публикации"
+                );
             }
             event.setEventDate(updateEventAdminRequest.getEventDate());
         }
@@ -324,6 +345,7 @@ public class EventServiceImpl implements EventService {
 
         event.setId(eventId);
         eventRepository.save(event);
+
         return eventMapper.toFull(event, getHitsEvent(eventId,
                 LocalDateTime.now().minusDays(100),
                 LocalDateTime.now(),
@@ -343,16 +365,11 @@ public class EventServiceImpl implements EventService {
 
         Specification<Event> specification = (((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            if (eventUserParam.getText() != null) {
-                predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(root.get("annotation")), "%" + eventUserParam.getText().toLowerCase() + "%"),
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(root.get("description")), "%" + eventUserParam.getText().toLowerCase() + "%")));
-            }
             if (eventUserParam.getCategories() != null) {
-                CriteriaBuilder.In<Long> categoriesInClause = criteriaBuilder.in(root.get("category"));
-                for (Long category : eventUserParam.getCategories()) {
+                CriteriaBuilder.In<Category> categoriesInClause = criteriaBuilder.in(root.get("category"));
+                for (Long categoryId : eventUserParam.getCategories()) {
+                    Category category = categoryRepository
+                            .findById(categoryId).orElseThrow(() -> new ValidationException("Категория не найдена"));
                     categoriesInClause.value(category);
                 }
                 predicates.add(categoriesInClause);
@@ -425,10 +442,14 @@ public class EventServiceImpl implements EventService {
 
         Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED);
 
+        if (event == null) {
+            throw new NotFoundException(String.format("Event with id=%d was not found", eventId));
+        }
+
         Long view = getHitsEvent(
                 event.getId(),
                 LocalDateTime.now().minusDays(1000),
-                LocalDateTime.now(), false, statsClient
+                LocalDateTime.now(), true, statsClient
         );
 
         log.info("Событие {} получено", event.getTitle());
@@ -439,10 +460,10 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public List<ParticipationRequestDto> getRequestsUserToEventPrivate(Long userId, Long eventId) {
 
-        Event event = eventRepository.findById(eventId).orElseThrow(
+        eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
 
-        User user = userRepository.findById(userId).orElseThrow(
+        userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException(String.format("User with id=%d not found", userId)));
 
         log.info("Запросы получены");
@@ -453,14 +474,18 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult updateEventRequestStatusPrivate(Long userId, Long eventId, EventRequestStatusUpdateRequest updateRequest) {
+    public EventRequestStatusUpdateResult updateEventRequestStatusPrivate(
+            Long userId,
+            Long eventId,
+            EventRequestStatusUpdateRequest updateRequest
+    ) {
         EventRequestStatusUpdateResult updateResult;
         List<Request> confirmedRequests = new ArrayList<>();
         List<Request> rejectedRequests = new ArrayList<>();
         int countRequests = updateRequest.getRequestIds().size();
         List<Request> requests = requestRepository.findByIdIn(updateRequest.getRequestIds());
 
-        User user = userRepository.findById(userId).orElseThrow(
+        userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException(String.format("User with id=%d not found", userId)));
 
         Event event = eventRepository.findById(eventId).orElseThrow(

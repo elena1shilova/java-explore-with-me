@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
-import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.NewEventDto;
@@ -22,7 +21,6 @@ public class EventMapper {
 
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
-    private final CategoryRepository categoryRepository;
 
     public Event toEvent(NewEventDto newEventDto, Category category, User user) {
         Event event = new Event();
@@ -35,10 +33,10 @@ public class EventMapper {
         event.setInitiator(user);
         event.setLon(newEventDto.getLocation().getLon());
         event.setLat(newEventDto.getLocation().getLat());
-        event.setPaid(newEventDto.isPaid());
+        event.setPaid(newEventDto.getPaid() == null ? false : newEventDto.getPaid());
         event.setParticipantLimit(newEventDto.getParticipantLimit() == null ? 0 : newEventDto.getParticipantLimit());
         event.setPublishedOn(LocalDateTime.now());
-        event.setRequestModeration(newEventDto.isRequestModeration());
+        event.setRequestModeration(newEventDto.getRequestModeration() == null ? true : newEventDto.getRequestModeration());
         event.setState(EventState.PENDING);
         event.setTitle(newEventDto.getTitle());
         return event;
@@ -78,5 +76,4 @@ public class EventMapper {
         eventShortDto.setViews(views);
         return eventShortDto;
     }
-
 }

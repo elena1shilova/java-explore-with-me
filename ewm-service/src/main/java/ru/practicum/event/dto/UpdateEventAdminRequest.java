@@ -5,7 +5,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.event.model.Location;
 
 import java.time.LocalDateTime;
@@ -17,7 +16,7 @@ public class UpdateEventAdminRequest {
     @Size(min = 20, max = 2000)
     private String annotation;
 
-    private CategoryDto category;
+    private Long category;
 
     @Size(min = 20, max = 7000)
     private String description;
@@ -30,7 +29,7 @@ public class UpdateEventAdminRequest {
     private Boolean paid;
 
     @PositiveOrZero
-    private Integer participantLimit;
+    private Long participantLimit;
 
     private Boolean requestModeration;
 
@@ -38,5 +37,4 @@ public class UpdateEventAdminRequest {
 
     @Size(min = 3, max = 120)
     private String title;
-
 }

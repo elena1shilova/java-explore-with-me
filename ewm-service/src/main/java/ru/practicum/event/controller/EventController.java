@@ -2,7 +2,6 @@ package ru.practicum.event.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -52,8 +51,8 @@ public class EventController {
     @ResponseStatus(HttpStatus.OK)
     public List<EventShortDto> getEventsByUserIdPrivate(
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "0") Integer from,
-            @RequestParam(defaultValue = "10") Integer size) {
+            @RequestParam(required = false, defaultValue = "0") Integer from,
+            @RequestParam(required = false, defaultValue = "10") Integer size) {
         log.info("Получен запрос на получение событий пользователя");
         return eventService.getEventsByUserIdPrivate(userId, PageRequest.of(from, size));
     }
@@ -84,8 +83,8 @@ public class EventController {
                                              @RequestParam(required = false) List<Long> categories,
                                              @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
                                              @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-                                             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer from,
-                                             @RequestParam(required = false, defaultValue = "10") @Min(1) Integer size) {
+                                             @RequestParam(required = false, defaultValue = "0") Integer from,
+                                             @RequestParam(required = false, defaultValue = "10") Integer size) {
         EventAdminParam eventAdminParam = new EventAdminParam();
         eventAdminParam.setUsers(users);
         eventAdminParam.setStates(states);
@@ -103,7 +102,7 @@ public class EventController {
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEventAdmin(
             @PathVariable Long eventId,
-            @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
+            @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         log.info("Запрос на изменение события админом");
         return eventService.updateEventAdmin(eventId, updateEventAdminRequest);
     }

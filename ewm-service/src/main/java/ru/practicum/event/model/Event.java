@@ -56,13 +56,12 @@ public class Event {
     private String description;
 
     @Column(name = "participant_limit")
-    private Integer participantLimit;
+    private Long participantLimit;
 
     @Enumerated(value = EnumType.STRING)
     private EventState state;
 
     @Column(name = "created_on")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
 
     @Column(name = "lat")

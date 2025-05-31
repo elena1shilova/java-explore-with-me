@@ -32,7 +32,7 @@ public class NewEventDto {
     @NotNull
     private Long category;
 
-    private boolean paid;
+    private Boolean paid;
 
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -44,11 +44,11 @@ public class NewEventDto {
     private String description;
 
     @PositiveOrZero
-    private Integer participantLimit;
+    private Long participantLimit;
 
     @NotNull
     private Location location;
 
-    private boolean requestModeration;
+    private Boolean requestModeration;
 
 }

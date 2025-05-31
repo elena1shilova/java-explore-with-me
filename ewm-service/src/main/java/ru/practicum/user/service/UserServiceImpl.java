@@ -2,6 +2,7 @@ package ru.practicum.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.dto.NewUserRequest;
@@ -27,7 +28,9 @@ public class UserServiceImpl implements UserService {
 
         if (isUserExistByEmail(newUserRequest.getEmail())) {
             log.info("Нарушение целостности данных");
-            throw new IllegalArgumentException("Пользователь с email: " + newUserRequest.getEmail() + " уже зарегистрирован");
+            throw new IllegalArgumentException(
+                    "Пользователь с email: " + newUserRequest.getEmail() + " уже зарегистрирован"
+            );
         }
 
         log.info("Пользователь зарегистрирован");
@@ -35,18 +38,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getAllUsersAdmin(int from, int size) {
-        log.info("Получение списка пользователей");
-
-        List<UserDto> users = userRepository.findAll().stream()
+    public List<UserDto> getUsersByIdsAdmin(List<Long> ids, Pageable pageable) {
+        log.info("Получение списка пользователей по id {}", ids);
+        if (ids == null || ids.isEmpty()) {
+            return userRepository.findAll(pageable).stream()
+                    .map(userMapper::toUserDto)
+                    .collect(Collectors.toList());
+        }
+        return userRepository.findByIdIn(ids).stream()
                 .map(userMapper::toUserDto)
-                .toList();
-
-        log.info("Пользователи найдены");
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserDto)
-                .skip(from)
-                .limit(size)
                 .collect(Collectors.toList());
     }
 

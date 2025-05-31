@@ -27,7 +27,7 @@ public class EventShortDto {
 
     private CategoryDto category;
 
-    private boolean paid;
+    private Boolean paid;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
