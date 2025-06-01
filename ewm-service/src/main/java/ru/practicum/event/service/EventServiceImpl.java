@@ -12,11 +12,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
-import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
-import ru.practicum.compilation.repository.CompilationRepository;
-import ru.practicum.compilation.service.CompilationService;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.event.dto.EventAdminParam;
 import ru.practicum.event.dto.EventFullDto;
@@ -42,7 +39,6 @@ import ru.practicum.request.model.RequestStatus;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
-import ru.practicum.user.service.UserServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,11 +58,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
-    private final CompilationRepository compilationRepository;
-    private final CompilationService compilationService;
-    private final UserServiceImpl userServiceImpl;
     private final StatsClient statsClient;
-    private final CategoryMapper categoryMapper;
     private final RequestMapper requestMapper;
 
     @Override
@@ -146,7 +138,7 @@ public class EventServiceImpl implements EventService {
         }
 
         if (updateEventUserRequest.getCategory() != null) {
-            event.setCategory(categoryRepository.getById(updateEventUserRequest.getCategory()));
+            event.setCategory(categoryRepository.findById(updateEventUserRequest.getCategory()).orElseThrow());
         }
 
         if (updateEventUserRequest.getDescription() != null) {
@@ -362,7 +354,7 @@ public class EventServiceImpl implements EventService {
         endpointHitDto.setTimestamp(LocalDateTime.now());
         statsClient.hit(endpointHitDto);
 
-        Specification<Event> specification = (((root, query, criteriaBuilder) -> {
+        Specification<Event> specification = ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (eventUserParam.getCategories() != null) {
                 CriteriaBuilder.In<Category> categoriesInClause = criteriaBuilder.in(root.get("category"));
@@ -398,7 +390,7 @@ public class EventServiceImpl implements EventService {
             predicates.add(criteriaBuilder.equal(root.get("state"), EventState.PUBLISHED));
 
             return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
-        }));
+        });
 
         if (eventUserParam.getSort() == null) {
             Pageable pageable = PageRequest.of(eventUserParam.getFrom() / eventUserParam.getSize(), eventUserParam.getSize(), Sort.by("id"));
