@@ -1,6 +1,5 @@
 package ru.practicum.request.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -33,7 +32,6 @@ public class Request {
     @Column(name = "request_id")
     private Long id;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created")
     private LocalDateTime created;
 
