@@ -31,14 +31,14 @@ public class HitsEventViewUtil {
         ObjectMapper mapper = new ObjectMapper();
 
         if (responseBody != null) {
-            output = mapper.convertValue(responseBody, new TypeReference<List<ViewStatsDto>>() {
+            output = mapper.convertValue(responseBody, new TypeReference<>() {
             });
         }
 
         Long view = 0L;
 
         if (!output.isEmpty()) {
-            view = output.get(0).getHits();
+            view = output.getFirst().getHits();
         }
         return view;
 
