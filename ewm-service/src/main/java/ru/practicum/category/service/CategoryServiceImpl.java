@@ -57,7 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void deleteCategory(Long catId) {
-        categoryRepository.findById(catId).orElseThrow(
+        Category category = categoryRepository.findById(catId).orElseThrow(
                 () -> new NotFoundException("Category not found"));
         if (eventRepository.findByCategoryId(catId) != null) {
             throw new IllegalArgumentException("Нельзя удалить категорию, которая уже используется в событиях");
