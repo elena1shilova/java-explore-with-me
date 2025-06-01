@@ -30,7 +30,6 @@ import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventSort;
 import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
-import ru.practicum.exception.IllegalArgumentExceptions;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.UpdateEventIncorrectDataException;
 import ru.practicum.exception.ValidationException;
@@ -130,7 +129,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findByInitiatorIdAndId(userId, eventId);
 
         if (event.getState() == EventState.PUBLISHED) {
-            throw new IllegalArgumentExceptions("Пользователь не может изменять опубликованное событие");
+            throw new IllegalArgumentException("Пользователь не может изменять опубликованное событие");
         }
 
         userRepository.findById(userId).orElseThrow(
@@ -138,7 +137,7 @@ public class EventServiceImpl implements EventService {
         );
 
         if (event.getState().equals(EventState.PUBLISHED)) {
-            throw new IllegalArgumentExceptions("Должно быть PENDING или CANCELED");
+            throw new IllegalArgumentException("Должно быть PENDING или CANCELED");
         }
 
         log.info("Получен запрос на изменение события пользователя");
@@ -189,7 +188,7 @@ public class EventServiceImpl implements EventService {
             } else if (updateEventUserRequest.getStateAction().equals("CANCEL_REVIEW")) {
                 event.setState(EventState.CANCELED);
             } else {
-                throw new IllegalArgumentExceptions(
+                throw new IllegalArgumentException(
                         "Событие должно иметь статус PENDING при создании и статус CANCELED после выполнения запроса"
                 );
             }
@@ -232,7 +231,7 @@ public class EventServiceImpl implements EventService {
                         eventState = EventState.valueOf(state);
                         eventStates.add(eventState);
                     }
-                } catch (IllegalArgumentExceptions e) {
+                } catch (IllegalArgumentException e) {
                     throw new ValidationException("Unknown parameter of state");
                 }
                 CriteriaBuilder.In<EventState> statesInClause = criteriaBuilder.in(root.get("state"));
@@ -283,17 +282,17 @@ public class EventServiceImpl implements EventService {
         if (updateEventAdminRequest.getStateAction() != null) {
             if (updateEventAdminRequest.getStateAction().equals("PUBLISH_EVENT")) {
                 if (!String.valueOf(event.getState()).equals("PENDING")) {
-                    throw new IllegalArgumentExceptions("Состояние события должно быть PENDING");
+                    throw new IllegalArgumentException("Состояние события должно быть PENDING");
                 }
                 event.setState(EventState.PUBLISHED);
                 event.setPublishedOn(LocalDateTime.now());
             } else if (updateEventAdminRequest.getStateAction().equals("REJECT_EVENT")) {
                 if (String.valueOf(event.getState()).equals("PUBLISHED")) {
-                    throw new IllegalArgumentExceptions("Событие не может быть REJECT");
+                    throw new IllegalArgumentException("Событие не может быть REJECT");
                 }
                 event.setState(EventState.CANCELED);
             } else {
-                throw new IllegalArgumentExceptions("StateAction должно быть PUBLISH_EVENT или REJECT_EVENT");
+                throw new IllegalArgumentException("StateAction должно быть PUBLISH_EVENT или REJECT_EVENT");
             }
         }
 
@@ -496,7 +495,7 @@ public class EventServiceImpl implements EventService {
         }
         for (Request request : requests) {
             if (!request.getStatus().equals(RequestStatus.PENDING)) {
-                throw new IllegalArgumentExceptions("Статус запроса не PENDING");
+                throw new IllegalArgumentException("Статус запроса не PENDING");
             }
         }
         if (updateRequest.getStatus() != null) {
@@ -509,7 +508,7 @@ public class EventServiceImpl implements EventService {
                         confirmedRequests.addAll(requests);
 
                     } else if (event.getParticipantLimit() <= event.getConfirmedRequests()) {
-                        throw new IllegalArgumentExceptions("Participant Limit");
+                        throw new IllegalArgumentException("Participant Limit");
                     } else {
                         for (Request request : requests) {
                             if (event.getParticipantLimit() > event.getConfirmedRequests()) {

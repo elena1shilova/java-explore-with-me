@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
-import ru.practicum.exception.IllegalArgumentExceptions;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.mapper.RequestMapper;
@@ -43,16 +42,16 @@ public class RequestServiceImpl implements RequestService {
                 () -> new NotFoundException("Пользователь не найден"));
         List<Request> requests = requestRepository.findAllByRequesterIdAndEventId(userId, eventId);
         if (!requests.isEmpty()) {
-            throw new IllegalArgumentExceptions("Запрос c такими данными уже существует");
+            throw new IllegalArgumentException("Запрос c такими данными уже существует");
         }
         if (userId.equals(event.getInitiator().getId())) {
-            throw new IllegalArgumentExceptions("Инициатор запроса не найден");
+            throw new IllegalArgumentException("Инициатор запроса не найден");
         }
         if (!event.getState().equals(EventState.PUBLISHED)) {
-            throw new IllegalArgumentExceptions("Событие не опубликовано");
+            throw new IllegalArgumentException("Событие не опубликовано");
         }
         if (event.getParticipantLimit() != 0 && event.getParticipantLimit().equals(event.getConfirmedRequests())) {
-            throw new IllegalArgumentExceptions("Participant Limit");
+            throw new IllegalArgumentException("Participant Limit");
         }
 
         request.setRequester(user);

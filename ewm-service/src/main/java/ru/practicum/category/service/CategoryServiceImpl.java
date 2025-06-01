@@ -11,7 +11,6 @@ import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.event.repository.EventRepository;
-import ru.practicum.exception.IllegalArgumentExceptions;
 import ru.practicum.exception.NotFoundException;
 
 import java.util.List;
@@ -30,7 +29,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto addCategory(NewCategoryDto newCategoryDto) {
         log.info("Получение запроса на добавление новой категории");
         if (categoryRepository.existsByName(newCategoryDto.getName())) {
-            throw new IllegalArgumentExceptions("Категория с таким именем уже существует");
+            throw new IllegalArgumentException("Категория с таким именем уже существует");
         }
         log.info("Категория добавлена");
         return categoryMapper.toCategoryDto(categoryRepository.save(categoryMapper.toCategory(newCategoryDto)));
@@ -61,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(catId).orElseThrow(
                 () -> new NotFoundException("Category not found"));
         if (eventRepository.findByCategoryId(catId) != null) {
-            throw new IllegalArgumentExceptions("Нельзя удалить категорию, которая уже используется в событиях");
+            throw new IllegalArgumentException("Нельзя удалить категорию, которая уже используется в событиях");
         }
         categoryRepository.deleteById(catId);
         log.info("Category was deleted");
@@ -76,7 +75,7 @@ public class CategoryServiceImpl implements CategoryService {
                 () -> new NotFoundException("Category not found"));
 
         if (!existCategory.getName().equals(categoryDto.getName()) && categoryRepository.existsByName(categoryDto.getName())) {
-            throw new IllegalArgumentExceptions("Категория с таким именем уже существует");
+            throw new IllegalArgumentException("Категория с таким именем уже существует");
         }
 
         existCategory.setName(categoryDto.getName());
