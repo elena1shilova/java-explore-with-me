@@ -18,13 +18,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class NewEventDto {
 
-    @NotNull
     @NotBlank
     @Size(min = 3, max = 120)
     private String title;
 
     @NotBlank
-    @NotNull
     @Size(min = 20, max = 2000)
     private String annotation;
 
@@ -36,7 +34,6 @@ public class NewEventDto {
     @NotNull
     private LocalDateTime eventDate;
 
-    @NotNull
     @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
