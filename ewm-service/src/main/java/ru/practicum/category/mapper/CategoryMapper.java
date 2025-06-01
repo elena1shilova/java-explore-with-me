@@ -10,6 +10,12 @@ import ru.practicum.category.model.Category;
 @RequiredArgsConstructor
 public class CategoryMapper {
 
+    public Category toCategory(CategoryDto categoryDto) {
+        Category category = new Category();
+        category.setName(categoryDto.getName());
+        return category;
+    }
+
     public Category toCategory(NewCategoryDto categoryDto) {
         return Category.builder()
                 .name(categoryDto.getName())

@@ -11,6 +11,8 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,6 +43,8 @@ public class Compilation {
 
     @Column(name = "title")
     @NotBlank
+    @NotNull
+    @Size(min = 1, max = 50)
     private String title;
 
     @Column(name = "pinned")
