@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.exception.IllegalArgumentExceptions;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.UpdateEventIncorrectDataException;
 import ru.practicum.exception.ValidationException;
@@ -23,7 +22,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentExceptions e) {
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
         log.warn(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }

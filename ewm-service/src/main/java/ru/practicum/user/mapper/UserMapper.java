@@ -26,25 +26,10 @@ public class UserMapper {
                 .build();
     }
 
-    public NewUserRequest toNewUserRequest(UserDto userDto) {
-        return NewUserRequest.builder()
-                .email(userDto.getEmail())
-                .name(userDto.getName())
-                .build();
-    }
-
     public UserShortDto toUserShortDto(User user) {
         return UserShortDto.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .build();
     }
-
-    public User toUserShort(UserShortDto userShortDto) {
-        return User.builder()
-                .id(userShortDto.getId())
-                .name(userShortDto.getName())
-                .build();
-    }
-
 }

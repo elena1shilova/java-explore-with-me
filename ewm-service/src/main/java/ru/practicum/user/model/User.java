@@ -6,8 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,12 +26,9 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @Size(min = 2, max = 250)
     @Column(name = "user_name")
     private String name;
 
-    @Size(min = 6, max = 254)
-    @Email
     @Column(name = "user_email")
     private String email;
 }
