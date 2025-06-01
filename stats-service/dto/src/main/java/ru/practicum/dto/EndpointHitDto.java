@@ -1,6 +1,5 @@
 package ru.practicum.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +19,5 @@ public class EndpointHitDto {
 
     private String ip; // IP-адрес пользователя, осуществившего запрос
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp; // Дата и время, когда был совершен запрос к эндпоинту
 }
