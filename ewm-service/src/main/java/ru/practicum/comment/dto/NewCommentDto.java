@@ -1,5 +1,6 @@
 package ru.practicum.comment.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class NewCommentDto {
 
     @Size(min = 1, max = 2000)
+    @NotBlank
     private String text;
 
 }

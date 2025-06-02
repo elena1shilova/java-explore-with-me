@@ -15,6 +15,7 @@ import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -46,8 +47,10 @@ public class CommentServiceImpl implements CommentService {
             throw new ValidationException("Комментировать возможно только опубликованные события");
         }
 
+        User author = userRepository.findById(userId).orElseThrow();
+
         return commentMapper.toCommentDto(
-                commentRepository.save(commentMapper.toNewComment(eventId, userId, newCommentDto))
+                commentRepository.save(commentMapper.toNewComment(newCommentDto, event, author))
         );
     }
 
