@@ -11,8 +11,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.event.model.Event;
 import ru.practicum.user.model.User;
 
@@ -21,8 +22,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
+@Setter
 @Entity
-@Data
 @Table(name = "comment")
 public class Comment {
 
